@@ -8,5 +8,5 @@ import (
 func main() {
 	router := gin.Default()
 	route.TradingSummaryRoutes(router)
-	router.Run("localhost:8081")
+	router.Run(":8081")
 }
