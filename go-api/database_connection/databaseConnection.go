@@ -13,7 +13,12 @@ import (
 var client = DBinstance()
 
 func DBinstance() *mongo.Client {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://" + conf.MONGO_HOST))
+	credential := options.Credential{
+		Username: conf.MONGO_USER,
+		Password: conf.MONGO_PSWD,
+	}
+
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://" + conf.MONGO_HOST).SetAuth(credential))
 	if err != nil {
 		log.Fatal(err)
 	}

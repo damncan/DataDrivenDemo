@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # Basic Reference: https://github.com/bitnami/bitnami-docker-kafka/blob/master/README.md
+  # Advanced Reference: https://github.com/bitnami/bitnami-docker-kafka#accessing-apache-kafka-with-internal-and-external-clients
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    user: root
+    ports:
+      - '2181:2181'
+    environment:
+      # Allow to accept connections from unauthenticated users
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    volumes:
+      - ./kafka/zookeeper:/bitnami/zookeeper
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  kafka:
+    image: 'bitnami/kafka:2.8.0'
+    user: root
+    ports:
+      - '9092:9092'
+      - '9093:9093'
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      # internal & external setting
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+      # optional setting
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=false
+      # housekeeping time (in hours)
+      - KAFKA_CFG_LOG_RETENTION_HOURS=6
+    volumes:
+      - ./kafka/kafka:/bitnami/kafka
+    depends_on:
+      - zookeeper
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  init-kafka:
+    image: 'bitnami/kafka:2.8.0'
+    depends_on:
+      - kafka
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo Creating kafka topics
+        /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list
+        /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic tradingResult --replication-factor 1 --partitions 1
+        /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_DATABASE=trading
+      - MONGO_INITDB_ROOT_USERNAME=damncan
+      - MONGO_INITDB_ROOT_PASSWORD=damncan
+    volumes:
+      - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init-js:ro
+      - ./mongo/mongo-volume:/data/db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  go:
+    build:
+      context: ./go-api
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+      - kafka
+  flink:
+    build:
+      context: ./flink
+      dockerfile: Dockerfile
+    depends_on:
+      - mongo
+      - kafka

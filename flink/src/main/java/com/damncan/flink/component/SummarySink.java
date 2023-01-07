@@ -30,6 +30,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @ConditionalOnProperty(name = "flink.job.summary", havingValue = "true", matchIfMissing = false)
 public class SummarySink extends RichSinkFunction<Tuple5<String, Double, Double, Double, ConcurrentHashMap<String, HashMap<String, Double>>>> {
+    @Value(value = "${spring.data.mongodb.user}")
+    private String mongoUser;
+    @Value(value = "${spring.data.mongodb.pswd}")
+    private String mongoPswd;
     @Value(value = "${spring.data.mongodb.host}")
     private String mongoHost;
     @Value(value = "${spring.data.mongodb.port}")
@@ -49,7 +53,9 @@ public class SummarySink extends RichSinkFunction<Tuple5<String, Double, Double,
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
 
-        mongoClient = MongoClients.create(String.format("mongodb://%s:%s", mongoHost, mongoPort));
+        String uri = String.format("mongodb://%s:%s@%s:%s", mongoUser, mongoPswd, mongoHost, mongoPort);
+        System.out.println("Connection infomation: " + uri);
+        mongoClient = MongoClients.create(uri);
         mongoDatabase = mongoClient.getDatabase(mongoDatabaseName);
         if (mongoDatabase.getCollection(mongoCollection) == null) {
             mongoDatabase.createCollection(mongoCollection);
