@@ -38,11 +38,26 @@ public class SummaryAccumulator {
 4. Start Flink data-streaming application in project "flink".
 5. Run JMeter auto-testing script under the dictionary "jmeter-scripts".
 
+## Containerization
+1. Alternatively, you can also execute `docker-compose up` based on docker-compose.yml under the root path of this project to launch all applications mentioned above.
+2. There are two dockerfiles under the following two projects, "flink" and "go-api". These files are used to package them.
+3. Hence, you can execute `docker build -t <imageName> .` and `docker run <imageName>` under the root path of project "flink" and "go-api", to launch these two applications individually, and remain your mongoDB and Kafka server launched on your host network, rather than container.
+   1. Steps to individually launch the project "flink" with docker.
+   ```
+   docker build -t flink .
+   docker run flink
+   ```
+   2. Steps to individually launch the project "go-api" with docker.
+   ```
+   docker build -t go-api .
+   docker run --rm -p 8081:8081 --add-host host.docker.internal:host-gateway -it go-api
+   ```
+
 ## Future improvement
 1. Fully and more realistic Forex data integration.
 
 ## Appendix
-### How to start kafka standalone on windows OS.
+### How to start kafka standalone on windows OS without using containerized kafka.
 1. Initialization
    1. [Download Kafka]{https://www.geeksforgeeks.org/how-to-install-and-run-apache-kafka-on-windows/}
    2. Start Zookeeper
