@@ -5,7 +5,7 @@ This is a data streaming demo project implemented in Golang, Flink, Kafka, Mongo
 ---
 
 ## Architecture
-![img.png](img.png)
+![Architecture of DataDrivenDemo](DataDrivenDemoArch.jpg)
 
 ## Data Definition
 1. go-api: A restful-API application which records all trading deal result.
@@ -31,7 +31,7 @@ public class SummaryAccumulator {
 }
 ```
 
-## Start all applications
+## Start All Applications
 1. Install and start Zookeeper and Kafka server on port 2181 and 9092 respectively.
 2. Install and start MongoDB on port 27017.
 3. Start restful API application in project "go-api" on port 8081.
@@ -53,7 +53,7 @@ public class SummaryAccumulator {
    docker run --rm -p 8081:8081 --add-host host.docker.internal:host-gateway -it go-api
    ```
 
-## Future improvement
+## Future Improvement
 1. Fully and more realistic Forex data integration.
 
 ## Appendix
