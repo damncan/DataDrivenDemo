@@ -61,6 +61,8 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=damncan
       - MONGO_INITDB_ROOT_PASSWORD=damncan
     volumes:
+      # /docker-entrypoint-initdb.d is an existing file in order to initialize the database.
+      # the parameter "ro" means "read only".
       - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init-js:ro
       - ./mongo/mongo-volume:/data/db
     extra_hosts:
